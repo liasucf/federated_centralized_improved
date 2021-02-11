@@ -28,6 +28,6 @@ docker run -e ROUNDS_ENV=<number_communication_rounds> -e CLIENTS_ENV=<n_clients
 ## To run the docker container of the client 
 
 docker build . -t client_fed        
-docker run -e DATA_ENV=<data_name> -e ROUNDS_ENV=<number of communication rounds> -e EPOCHS_ENV=<n_epochs> -v /home/ec2-user/federated_centralized/centralized/client:/app -it client_fed       
+docker run -e DATA_ENV=<data_name> -e ROUNDS_ENV=<number of communication rounds> -e EPOCHS_ENV=<n_epochs> -v /home/ec2-user/federated_centralized/federated/client:/app -it client_fed       
   
   
