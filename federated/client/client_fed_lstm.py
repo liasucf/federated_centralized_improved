@@ -279,7 +279,8 @@ while True:
         
         h = open("classification_accuracy.txt", "a+")
         h.write("Number: " + str(number) + '\n')
-        h.write("Labels: " + str(np.unique(y_class_pred)) + '\n')
+        h.write("Labels Real: " + str(np.unique(y_class_test)) + '\n')
+        h.write("Labels Predicted: " + str(np.unique(y_class_pred)) + '\n')
         h.write("Accuracy of Classification on test set: " + str(accuracy_score(y_class_test,y_class_pred)) + '\n')
         h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test, y_class_pred)) + '\n')
         cm = confusion_matrix(y_class_test, y_class_pred)
