@@ -9,7 +9,7 @@ Run first the docker of the server and when it is prepared to accept clients run
 ## Here are some main arguments that the docker file accepts as parameters. 
 
 - data_name: The name of the data file that has the data used by the client.
-              In our example the data names are: 9953, 9958, 9959, 9994, 12487, 12843.
+              In our example the data names are: 9953, 9958, 9959, 9994, 12487, 12483.
               This parameter is required to run the docker container.
               
  - number_communication_rounds: this consits in the number of time that the server will perform the model aggregation in the Federated Learning. It can be seen as a sort of iteration. This parameters is needed in the server and client docker.
@@ -28,6 +28,6 @@ docker run -e ROUNDS_ENV=<number_communication_rounds> -e CLIENTS_ENV=<n_clients
 ## To run the docker container of the client 
 
 docker build . -t client_fed        
-docker run -e DATA_ENV=<data_name> -e ROUNDS_ENV=<number of communication rounds> -e EPOCHS_ENV=<n_epochs> -v /home/ec2-user/federated_centralized/centralized/client:/app -it client_fed       
+docker run -e DATA_ENV=<data_name> -e ROUNDS_ENV=<number of communication rounds> -e EPOCHS_ENV=<n_epochs> -v /home/ec2-user/federated_centralized/federated/client:/app -it client_fed       
   
   
