@@ -1,4 +1,4 @@
-# federated_centralized
+/# federated_centralized
 A work to compare the Federated and the Centralized Machine Learning approaches.
 
 This work is composed of two docker images that represent a client and a server, in our tests we have used 
@@ -23,11 +23,11 @@ By default this number is 6
 ## To run the docker container of the server
 
 docker build . -t server_fed      
-docker run -e ROUNDS_ENV=<number_communication_rounds> -e CLIENTS_ENV=<n_clients> -p 80:80 -v /home/ec2-user/federated/server:/app -it server_fed
+docker run -e ROUNDS_ENV=<number_communication_rounds> -e CLIENTS_ENV=<n_clients> -p 80:80 -v /home/ec2-user/federated_centralized/federated/server:/app -it server_fed
 
 ## To run the docker container of the client 
 
 docker build . -t client_fed        
-docker run -e DATA_ENV=<data_name> -e ROUNDS_ENV=<number of communication rounds> -e EPOCHS_ENV=<n_epochs> -v /home/ec2-user/federated/client:/app -it client_fed       
+docker run -e DATA_ENV=<data_name> -e ROUNDS_ENV=<number of communication rounds> -e EPOCHS_ENV=<n_epochs> -v /home/ec2-user/federated_centralized/centralized/server:/app -it client_fed       
   
   
