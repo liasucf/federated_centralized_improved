@@ -84,7 +84,7 @@ def last_model(c,addr):
             c.send(data)
 
         b = open("temps_communicate.txt", "a+")
-        b.write('Time to send the last model to the client'+ str(addr) + ':' + str(time.time() - start_time)+ '\n')
+        b.write('Time to send the last model to the client'+ str(addr) + ':' + str(secs2hours(time.time() - start_time))+ '\n')
         b.close()
              
         start_waiting = time.time()
@@ -105,7 +105,7 @@ def last_model(c,addr):
             
         #get the time to communicate with each client
         b = open("temps_communicate.txt", "a+")
-        b.write("Final Iteraction - Time to communicate: " + str(time.time() - start_waiting )+"of the client"+ str(addr)+ '\n' )
+        b.write("Final Iteraction - Time to communicate: " + str(secs2hours(time.time() - start_waiting))+"of the client"+ str(addr)+ '\n' )
         b.close()
         
         #get the CPU and memory usage in the last communication round
@@ -203,7 +203,7 @@ count = 0
 seed(1)
 
 #Get battery power information from the computer
-z = open("battery_power_in_execution.txt", "a+")
+#z = open("battery_power_in_execution.txt", "a+")
 #full = float(subprocess.getoutput("grep \"^last full capacity\" /proc/acpi/battery/BAT0/info | awk '{ print $4 }'"))
 #z.write('Fully Charged Capacity: %d Wh' % (full)+ '\n' )
 
