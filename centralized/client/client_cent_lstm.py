@@ -58,7 +58,6 @@ while True:
         
         data = data.iloc[(0 + size_data*iteration):(size_data*(iteration+1))]  
         
-        data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
         data['temperature'] = data['temperature'].astype(str).astype(float)
         data['humidity'] = data['humidity'].astype(str).astype(float)
         data['tvoc'] = data['tvoc'].astype(str).astype(float)
@@ -66,13 +65,14 @@ while True:
         
         data.sort_values(by=['Time'], inplace = True)
         data.reset_index(drop= True, inplace = True)
+
         #Creating the classes for classification
         #data = data.iloc[0:args.n_samples]
         bins = [50, 1000, 2000, 8000]
         labels = ["Good","Minor Problemns","Hazardous"]
         data['class'] = pd.cut(data['co2'].values, bins=bins, labels=labels)
         
-        values = np.column_stack((data['temperature'], data['humidity'], data['tvoc'],data['co2'],data['class'] ))
+        values = np.column_stack((data['Time'], data['temperature'], data['humidity'], data['tvoc'],data['co2'],data['class'] ))
         # ### Creating the sliding window matrix
         
         filehandler = open(b"data_pickled.sav","wb")

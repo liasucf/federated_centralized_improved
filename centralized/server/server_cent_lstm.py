@@ -224,13 +224,18 @@ while iteration < args.communication_rounds - 1:
     df_X = pd.DataFrame(seq_X) 
     df_y = pd.DataFrame(seq_y) 
     data_class = []
+    list_data_time = []
     for a in list_of_addresses:
         file = open('data'+str(a)+'.sav','rb')
         values = pickle.load(file)
-        
+        #getting the time colum
+        data_time = values[:,0]
+        list_data_time.append(pd.to_datetime(data_time, format='%Y-%m-%d %H:%M:%S'))
+        #taking out the time column
+        values = values [:,1:]
         n_steps_in, n_steps_out = args.n_steps_in, args.n_steps_out
         
-        bull , y_class = split_sequences(values ,n_steps_in , n_steps_out )
+        bull , y_class = split_sequences(values, n_steps_in , n_steps_out )
         
         data_class.append(y_class)
         values = values[:, :-1]
@@ -254,7 +259,8 @@ while iteration < args.communication_rounds - 1:
         
         df_X.append(df_X)
         df_y.append(df_y)
-
+    
+    list_data_time = array(list_data_time)
     data_class = array(data_class)
     data_class = data_class.reshape((data_class.shape[1], args.n_clients ,  n_outputs))
     
@@ -265,7 +271,8 @@ while iteration < args.communication_rounds - 1:
     
     X_train, X_test = X[0:SPLIT_IDX], X[SPLIT_IDX:len(X)]
     y_train, y_test = y[0:SPLIT_IDX], y[SPLIT_IDX:len(X)]
-    
+    list_data_time = list_data_time[:,SPLIT_IDX:len(X)]
+
     scaler_x = StandardScaler()
     X_train = scaler_x.fit_transform(X_train)
     X_test = scaler_x.transform(X_test)
@@ -293,10 +300,7 @@ while iteration < args.communication_rounds - 1:
 
     #Initialize the model
     model = LSTM(n_input,args.n_clients, args.units,  args.layers, n_outputs)
-    
-    
-    
-    
+
     early = EarlyStopping(patience=args.patience, threshold= args.threshold )
     
     net = NeuralNetRegressor(
@@ -341,8 +345,7 @@ while iteration < args.communication_rounds - 1:
     
     y_pred = net.predict(X_test)
     
-    #target = scaler.inverse_transform(y_pred)
-    #real = scaler.inverse_transform(y_test)
+
     
     a = open("test_losses.txt", "a+")    
     for i in range(args.n_clients):
@@ -350,41 +353,52 @@ while iteration < args.communication_rounds - 1:
         a.write('MAE for Client '+str(i) + ' is: ' + str(mean_absolute_error(y_test[:,i,:], y_pred[:,i,:]))+ '\n' )
         a.write("RMSE loss: " + str(sqrt(mean_squared_error(y_test[:,i,:], y_pred[:,i,:]))) + " MAPE loss: " + str(mean_absolute_percentage_error(y_test[:,i,:].numpy(), y_pred[:,i,:]))+ '\n' ) 
     a.close()
-    print(y_pred.shape)
     
-    fig1 = plt.figure(figsize=(16,7))
-    plt.plot(y_test[:,args.n_clients-1,:],color='red', label='Test' )
-    plt.plot(y_pred[:,args.n_clients-1,:],color='blue', label = 'Prediction')
-    plt.xlabel('Time (H)')
-    plt.ylabel('AQI O3')
-    plt.title('O3 variation over time')
-    plt.grid(True)
-    plt.legend()
-    fig1.savefig('prediction_'+str(args.n_clients)+'.png', bbox_inches='tight')
+    target = scaler_y.inverse_transform(y_pred.reshape((y_pred.shape[0], n_data * n_outputs)))
+    real = scaler_y.inverse_transform(y_test.reshape((y_test.shape[0], n_data * n_outputs)))
+
+    target = target.reshape((target.shape[0], n_data ,  n_outputs))
+    real = real.reshape((real.shape[0], n_data ,  n_outputs))
+
+    for i in range(args.n_clients):
+        fig1 = plt.figure(figsize=(16,7))
+        plt.plot(list_data_time[i,:], real[:,i,n_steps_out-1],color='#8EA7EB', label='Test' )
+        plt.plot(list_data_time[i,:], target[:,i,n_steps_out-1],color='#5011D6', label = 'Prediction')
+        plt.xlabel('Date')
+        plt.ylabel('eCO2')
+        plt.title('eCO2 variation over time')
+        plt.grid(True)
+        plt.legend()
+        fig1.savefig('prediction_client_'+str(i)+'.png', bbox_inches='tight')
         
-    # In[79]:
+
     y_pred = y_pred.reshape((y_pred.shape[0], n_data * n_outputs))
     y_pred =  scaler_y.inverse_transform(y_pred)
     
-
-    
     y_class_test = data_class[SPLIT_IDX:len(X),:,:]
-    
+
     bins = [50, 1000, 2000, 8000]
     labels = ["Good","Minor Problemns","Hazardous"]
     
+    
     y_class_pred = pd.cut( y_pred.reshape(-1), bins=bins, labels=labels).astype(str)    
-    y_class_test = y_class_test.reshape(-1)
+    y_class_pred = y_class_pred.reshape((y_pred.shape[0], n_data ,  n_outputs))
+    
+
     h = open("classification_accuracy.txt", "a+")
     h.write("Number: " + str(iteration) + '\n')
-    h.write("Labels: " + str(np.unique(y_class_pred)) + '\n')
-    h.write("Accuracy of Classification on test set: " + str(accuracy_score(y_class_test,y_class_pred)) + '\n')
-    h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test, y_class_pred)) + '\n')
-    cm = confusion_matrix(y_class_test, y_class_pred)
-    h.write("True Positive: " + str(np.diag(cm)) + " Support for each label " + str(np.sum(cm, axis = 1)) + '\n')
-    h.write("Recall: " + str(np.diag(cm) / np.sum(cm, axis = 1)) + " Precision: " + str(np.diag(cm) / np.sum(cm, axis = 0)) + '\n')
-    h.write("Recall Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 1))) + " Precision Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 0))) + '\n')
+    for i in range(args.n_clients):
+        #y_class_test = y_class_test.reshape(-1)
+        print(y_class_test[:,i,:].reshape(-1).shape)
+        h.write('Accuracy of the client :'+str(i+1) + ' is: ' + str(accuracy_score(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1)))+ '\n' )
+        h.write("Labels: " + str(np.unique(y_class_pred[:,i,:])) + '\n')
+        h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))) + '\n')
+        cm = confusion_matrix(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))
+        h.write("True Positive: " + str(np.diag(cm)) + " Support for each label " + str(np.sum(cm, axis = 1)) + '\n')
+        h.write("Recall: " + str(np.diag(cm) / np.sum(cm, axis = 1)) + " Precision: " + str(np.diag(cm) / np.sum(cm, axis = 0)) + '\n')
+        h.write("Recall Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 1))) + " Precision Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 0))) + '\n')
     h.close()
+    
     
         
     iteration = iteration + 1
@@ -393,7 +407,6 @@ for client in clients:
     t = Thread(target=end_connection, args = (client[0], client[1]))
     trds.append(t)
     t.start()
-    #Only continue when all the threads are finalized (all clients sent their models)
-    #- when all clients have responded (syncronous approach
+
 
 s.close()
