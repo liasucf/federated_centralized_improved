@@ -36,7 +36,7 @@ def secs2hours(secs):
 
 #Creating architecture of the Neural Network model
 class LSTM(nn.Module):
-    def __init__(self, input_size=15, n_hidden=10, n_layers=1, output_size=1):
+    def __init__(self, input_size=15, n_hidden=80, n_layers=1, output_size=5):
         super(LSTM, self).__init__()
         self.n_hidden = n_hidden
         self.n_layers = n_layers
@@ -67,7 +67,10 @@ class Arguments:
         self.n_clients = int(sys.argv[2])  if len(sys.argv) > 2 else 6
         #if there is no parameters passed the default is 500 
         self.layers = 1
-        self.units = 10
+        self.units = 80
+        self.n_steps_out = 5
+        self.n_steps_in = 5
+        self.n_features = 3
 
 
 #Funtion to send the last model for all the clients that are connected to the server
@@ -117,7 +120,7 @@ def last_model(c,addr):
 def clientHandler(c, addr):
     #A thread for each client is created
     global count
-    global epoch
+    global iteration
     global clients
     try:
         msg = 0
@@ -170,7 +173,8 @@ def clientHandler(c, addr):
 
 args = Arguments()
 
-n_timesteps, n_features, n_outputs = 5, 3, 1
+
+n_timesteps, n_features, n_outputs = args.n_steps_in, args.n_features, args.n_steps_out
 n_input = n_timesteps * n_features
 #Initialize the model
 initial_model = LSTM(n_input, args.units, args.layers, n_outputs)
@@ -197,28 +201,10 @@ trds = []
 #Initialize the clients url
 # -*- coding: utf-8 -*-
 clients = []
-epoch = 0
+iteration = 0
 count = 0
 # seed random number generator
 seed(1)
-
-#Get battery power information from the computer
-#z = open("battery_power_in_execution.txt", "a+")
-#full = float(subprocess.getoutput("grep \"^last full capacity\" /proc/acpi/battery/BAT0/info | awk '{ print $4 }'"))
-#z.write('Fully Charged Capacity: %d Wh' % (full)+ '\n' )
-
-#See the battery energy capacity in the begining of the algorithms execution
-
-#start_capacity = float(subprocess.getoutput("grep \"^remaining capacity\" /proc/acpi/battery/BAT0/state | awk '{ print $3 }'"))
-#z.write('Start RemainingCapacity: ' + str(start_capacity)+ "Wh"+ '\n')
-#state = subprocess.getoutput("grep \"^charging state\" /proc/acpi/battery/BAT0/state | awk '{ print $3 }'")
-#z.write('Charging state: ' + str(state)+ '\n')
-
-#Battery percentage charge
-
-#battery = psutil.sensors_battery()
-#z.write("charge = %s%%, time left = %s" % (battery.percent, secs2hours(battery.secsleft))+ '\n')
-#z.close()
 
 #Record all the clients connected and their ip adress in a file 
 r = open("clients.txt", "a+")
@@ -234,7 +220,7 @@ r.close()
 
 #Start execution until achieve maximum communication rounds
 start_time = time.time()
-while epoch < args.communication_rounds - 1:
+while iteration < args.communication_rounds - 1:
     models = {}
     count = 0
     #Generate randomly numbers of integers that means the number of clients that will be conected
@@ -242,9 +228,9 @@ while epoch < args.communication_rounds - 1:
     #Our fraction was C=0.7
     values = np.random.choice(len(clients), int(0.7*len(clients)), replace=False)
     print("Clients " + str(values), '\n')
-    print("Epoch Number " + str(epoch), '\n')
+    print("Iteration Number " + str(iteration), '\n')
     
-    epoch = epoch + 1
+    iteration = iteration + 1
     for i in values:
         #Make a thread for each client to send them the model and wait for their response
         t = Thread(target=clientHandler, args = (clients[i][0], clients[i][1]))

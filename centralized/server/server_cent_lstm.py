@@ -31,11 +31,14 @@ from sklearn.metrics import accuracy_score
 # ## Defining the Neural Network
 
 # In[134]:
-
+def secs2hours(secs):
+    mm, ss = divmod(secs, 60)
+    hh, mm = divmod(mm, 60)
+    return "%d:%02d:%02d" % (hh, mm, ss)
 
 #Creating architecture of the Neural Network model
 class LSTM(nn.Module):
-    def __init__(self, input_size=35, n_clients= 2, n_hidden=100, n_layers=1, output_size=5):
+    def __init__(self, input_size=35, n_clients=2, n_hidden=50, n_layers=1, output_size=5):
         super(LSTM, self).__init__()
         self.n_hidden = n_hidden
         self.n_layers = n_layers
@@ -81,7 +84,7 @@ class Arguments:
         self.momentum =  0.09
         self.threshold = 0.0003
         self.layers = 1
-        self.units = 10
+        self.units = 50
         self.n_steps_out = 5
         self.n_steps_in = 5
         
@@ -310,12 +313,13 @@ while iteration < args.communication_rounds - 1:
     batch_size = args.batch_size,
     optimizer__momentum=args.momentum,
     iterator_train__shuffle=False,
-    iterator_valid__shuffle=False,
-    callbacks=[early])
+    iterator_valid__shuffle=False
+    #callbacks=[early]
+    )
     
-    start_time = time.time()
+    start_training_time = time.time()
     net.fit(X_train, y_train)
-    print("Tempo de execução: " + str(time.time() - start_time))
+    print("Tempo para treinar: " + str(secs2hours(time.time() - start_training_time)))
     
     
     # In[72]:
@@ -377,7 +381,7 @@ while iteration < args.communication_rounds - 1:
     
     y_class_test = data_class[SPLIT_IDX:len(X),:,:]
 
-    bins = [50, 1000, 2000, 8000]
+    bins = [50, 1000, 1500, 8000]
     labels = ["Good","Minor Problemns","Hazardous"]
     
     
@@ -403,10 +407,18 @@ while iteration < args.communication_rounds - 1:
         
     iteration = iteration + 1
 
+print("Tempo de execução: " + str(secs2hours(time.time() - start_time)))
+
+trs = []
 for client in clients:
     t = Thread(target=end_connection, args = (client[0], client[1]))
-    trds.append(t)
+    trs.append(t)
     t.start()
 
+for tr in trs:
+    tr.join()
+
+for client in clients:
+    client[0].close()
 
 s.close()

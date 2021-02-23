@@ -23,10 +23,11 @@ from skorch.callbacks import EarlyStopping
 from skorch import NeuralNetRegressor
 from math import sqrt
 import itertools
+import matplotlib.dates as mdates
 
 #Creating architecture of the Neural Network model
 class LSTM(nn.Module):
-    def __init__(self, input_size=15, n_hidden=10, n_layers=1, output_size=1):
+    def __init__(self, input_size=15, n_hidden=80, n_layers=1, output_size=5):
         super(LSTM, self).__init__()
         self.n_hidden = n_hidden
         self.n_layers = n_layers
@@ -62,12 +63,14 @@ class Arguments:
         self.data = sys.argv[1]
         self.communication_rounds = int(sys.argv[2]) if len(sys.argv) > 2 else 5
         self.epochs = int(float(sys.argv[3])) if len(sys.argv) > 3 else 200
-        self.seed = 1
+        self.seed = 2
         self.lr = 0.01
         self.batch_size = 8
         self.patience = 100
         self.momentum =  0.09
         self.threshold = 0.0003
+        self.n_steps_out = 5
+        self.n_steps_in = 5
         
 
 # split a multivariate sequence into samples
@@ -102,7 +105,7 @@ p.cpu_percent(interval=None)
 
 # ### Charging the data
 ## Loading data incrementaly 
-data = pd.read_csv('/app/Data/'+args.data +'.csv', sep=',')
+data = pd.read_csv('Data/'+args.data +'.csv', sep=',')
 
 
 data['Time'] = pd.to_datetime(data['Time'], format='%Y-%m-%d %H:%M:%S')
@@ -115,23 +118,25 @@ data.sort_values(by=['Time'], inplace = True)
 data.reset_index(drop= True, inplace = True)
 #Creating the classes for classification
 #data = data.iloc[0:args.n_samples]
-bins = [50, 1000, 2000, 8000]
+bins = [50, 1000, 1500, data['co2'].max()]
 labels = ["Good","Minor Problemns","Hazardous"]
 data['class'] = pd.cut(data['co2'].values, bins=bins, labels=labels)
 
-values = np.column_stack((data['temperature'], data['humidity'], data['tvoc'],data['co2']))
+values = np.column_stack((data['temperature'], data['humidity'], data['tvoc'],data['co2'], data['class']))
 # ### Creating the sliding window matrix
+n_steps_in, n_steps_out = args.n_steps_in, args.n_steps_out
 
-n_steps_in, n_steps_out = 5, 1
-# convert into input/output
-# choose a number of time steps
+bull , y_class = split_sequences(values, n_steps_in , n_steps_out )
+values = values[:, :-1]
+
 
 X, y = split_sequences(values, n_steps_in, n_steps_out)
 
 
-n_timesteps, n_features, n_outputs = X.shape[1], X.shape[2], y.shape[1]
-n_input = n_timesteps * n_features
+n_timesteps, n_features, n_outputs = X.shape[1], X.shape[2], y.shape[1]   
+n_input = n_timesteps * n_features  
 X = X.reshape((X.shape[0], n_input))
+
 tscv = TimeSeriesSplit(n_splits=args.communication_rounds)
 generator = tscv.split(X)
 host = "54.94.82.121"
@@ -174,14 +179,18 @@ while True:
         print(current_round)
         result = next(itertools.islice(generator, current_round))
         train_index, test_index = result[0], result[1]
-
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
-        
+
+
         fig_split, ax = plt.subplots(figsize=(20, 6))
-        ax.plot(data['Time'][train_index],y_train ,marker='.', linestyle='-', linewidth=0.5, label='Train')
-        ax.plot(data['Time'][np.hstack((train_index,test_index))], [None for i in y_train] + [x for x in y_test] ,marker='.', linestyle='-', linewidth=0.5, label='Test')
-        ax.set_ylabel('CO2 Concentration')
+        ax.plot(data['Time'][train_index],y_train[:,n_steps_out-1] ,linestyle='-', linewidth=2, label='Train', color='#E65132')
+        ax.plot(data['Time'][np.hstack((train_index,test_index))], [None for i in y_train[:,n_steps_out-1]] + [x for x in y_test[:,n_steps_out-1]] , linestyle='-', linewidth=2, label='Test', color='#6156FA')
+        date_form = mdates.DateFormatter("%d %b")
+        ax.xaxis.set_major_formatter(date_form)
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+        ax.set_xlim(data['Time'][np.hstack((train_index,test_index))].min(), data['Time'][np.hstack((train_index,test_index))].max())
+        ax.set_ylabel('eCO2 (ppm)')
         ax.set_xlabel('Time')
         ax.legend();
         fig_split.savefig('train_test_split_plot'+str(number)+'.png', bbox_inches='tight')
@@ -194,10 +203,7 @@ while True:
         X_train, y_train = X_train[mask, :], y_train[mask]
         # summarize the shape of the updated training dataset
 
-
-        y_class_test = np.array(data['class'].to_list())[test_index]
-        
-        
+        y_class_test = y_class[test_index]
         
         
         scaler_x = StandardScaler()
@@ -215,7 +221,6 @@ while True:
         y_test = torch.from_numpy(y_test).float()
         
         
-    
         model = pickle.load(open('model_rec.sav', 'rb'))
         
         
@@ -229,8 +234,9 @@ while True:
         batch_size = args.batch_size,
         optimizer__momentum=args.momentum,
         iterator_train__shuffle=False,
-        iterator_valid__shuffle=False,
-        callbacks=[early])
+        iterator_valid__shuffle=False
+        #callbacks=[early]
+    )
         
         start_training = time.time()
         net.fit(X_train, y_train)
@@ -257,23 +263,42 @@ while True:
         fig.savefig('loss_plot'+str(number)+'.png', bbox_inches='tight')
 
         y_pred = net.predict(X_test)
-        
+
         a = open("test_losses.txt", "a+")
         a.write("Number: " + str(number) + '\n')
         a.write("MSE loss: " + str(mean_squared_error(y_test, y_pred)) + " MAE loss: " + str(mean_absolute_error(y_test, y_pred))  + '\n' )
         a.write("RMSE loss: " + str(sqrt(mean_squared_error(y_test, y_pred))) + " MAPE loss: " + str(mean_absolute_percentage_error(y_test.numpy(), y_pred))+ '\n' ) 
         a.close()
-        #print('Accuracy of Random Forest Classifier on test set: {:.2f}'.format((accuracy_score(y_test,y_pred))))
-  
+
+        target = scaler_y.inverse_transform(y_pred)
+        real = scaler_y.inverse_transform(y_test)
+ 
+
+        fig1, ax = plt.subplots(figsize=(16,7))
+        ax.plot(data['Time'][test_index], real[:,n_steps_out-1],color='#6156FA', label='Test' )
+        ax.plot(data['Time'][test_index], target[:,n_steps_out-1],color='#FFBB69', label = 'Prediction')
+        
+        date_form = mdates.DateFormatter("%d %b")
+        ax.xaxis.set_major_formatter(date_form)
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+        ax.set_xlabel('Time')
+        ax.set_ylabel('eCO2 (ppm)')
+        ax.set_title('Concentration of eCO2 over time')
+        ax.legend()
+        fig1.savefig('prediction_round_'+str(number)+'.png', bbox_inches='tight')
+
+
         y_pred =  scaler_y.inverse_transform(y_pred)
 
 
-        bins = [50, 1000, 2000, 8000]
+        bins = [50, 1000, 1500, 8000]
         labels = ["Good","Minor Problemns","Hazardous"]
 
         
         y_class_pred = pd.cut( y_pred.reshape(-1), bins=bins, labels=labels).astype(str)    
-        print(y_class_pred)
+        y_class_pred = y_class_pred.reshape((y_pred.shape[0], n_outputs))
+
+
         print(np.unique(y_class_test))
         print(np.unique(y_class_pred))
         
@@ -281,26 +306,16 @@ while True:
         h.write("Number: " + str(number) + '\n')
         h.write("Labels Real: " + str(np.unique(y_class_test)) + '\n')
         h.write("Labels Predicted: " + str(np.unique(y_class_pred)) + '\n')
-        h.write("Accuracy of Classification on test set: " + str(accuracy_score(y_class_test,y_class_pred)) + '\n')
-        h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test, y_class_pred)) + '\n')
-        cm = confusion_matrix(y_class_test, y_class_pred)
+        h.write("Accuracy of Classification on test set: " + str(accuracy_score(y_class_test.reshape(-1),y_class_pred.reshape(-1))) + '\n')
+        h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test.reshape(-1), y_class_pred.reshape(-1))) + '\n')
+        cm = confusion_matrix(y_class_test.reshape(-1), y_class_pred.reshape(-1))
         h.write("True Positive: " + str(np.diag(cm)) + " Support for each label " + str(np.sum(cm, axis = 1)) + '\n')
         h.write("Recall: " + str(np.diag(cm) / np.sum(cm, axis = 1)) + " Precision: " + str(np.diag(cm) / np.sum(cm, axis = 0)) + '\n')
         h.write("Recall Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 1))) + " Precision Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 0))) + '\n')
         h.close()
 
         increment = increment - 1
-    param = 0
-    if current_round == 2:
-        if (model.parameters() == param):
-            print("TRUEEE LASCOUUU")
-            print(param)
-            print(model.parameters())
-        else:
-            print("FALSE LIA VDB")
 
-    print(model.parameters())
-    param = model.parameters()
     
     #Collecting the information of memory and CPU usage
     z = open("memory_cpu.txt", "a+")
@@ -328,4 +343,5 @@ while True:
         s.send(data_updated)
         print('Time to send updated model to the server',time.time() - start_time , '\n')
     r.close()
+
 

@@ -68,7 +68,7 @@ while True:
 
         #Creating the classes for classification
         #data = data.iloc[0:args.n_samples]
-        bins = [50, 1000, 2000, 8000]
+        bins = [50, 1000, 1500, data['co2'].max()]
         labels = ["Good","Minor Problemns","Hazardous"]
         data['class'] = pd.cut(data['co2'].values, bins=bins, labels=labels)
         
