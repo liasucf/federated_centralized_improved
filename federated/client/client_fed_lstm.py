@@ -118,7 +118,7 @@ data.sort_values(by=['Time'], inplace = True)
 data.reset_index(drop= True, inplace = True)
 #Creating the classes for classification
 #data = data.iloc[0:args.n_samples]
-bins = [50, 1000, 1500, data['co2'].max()]
+bins = [50, 1000, 1500, 8000]
 labels = ["Good","Minor Problemns","Hazardous"]
 data['class'] = pd.cut(data['co2'].values, bins=bins, labels=labels)
 

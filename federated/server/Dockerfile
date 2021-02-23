@@ -4,11 +4,9 @@ FROM arm64v8/python:3.6-slim
 
 ARG communication_rounds
 ARG n_clients
-ARG n_epochs
 
 ENV ROUNDS_ENV=${communication_rounds}
 ENV CLIENTS_ENV=${n_clients}
-ENV EPOCHS_ENV=${n_epochs}
 
 #install requirements for torch
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -55,5 +53,5 @@ COPY server_fed_lstm.py server_fed_lstm.py
 
 RUN chmod +x server_fed_lstm.py
 
-CMD python server_fed_lstm.py $ROUNDS_ENV $CLIENTS_ENV $EPOCHS_ENV
+CMD python server_fed_lstm.py $ROUNDS_ENV $CLIENTS_ENV
 

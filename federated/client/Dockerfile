@@ -3,9 +3,12 @@
 FROM arm64v8/python:3.6-slim
 
 ARG data
-ENV DATA_ENV=${data}
 ARG communication_rounds
+ARG n_epochs
+
+ENV DATA_ENV=${data}
 ENV ROUNDS_ENV=${communication_rounds}
+ENV EPOCHS_ENV=${n_epochs}
 
 #install requirements for torch
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -51,4 +54,4 @@ RUN chmod +x client_fed_lstm.py
 RUN echo $(ls)
 RUN echo $(ls Data)
 
-CMD python client_fed_lstm.py $DATA_ENV $ROUNDS_ENV
+CMD python client_fed_lstm.py $DATA_ENV $ROUNDS_ENV $EPOCHS_ENV
