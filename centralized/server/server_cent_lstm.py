@@ -24,6 +24,7 @@ from skorch.callbacks import EarlyStopping
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+import matplotlib.dates as mdates
 
 
 # # Implementing MLP Prediction of a Time Series in PyTorch
@@ -171,7 +172,7 @@ p.cpu_percent(interval=None)
 # ## DataSet
 
 # ### Charging the data
-host = "0.0.0.0"
+host = "127.0.0.1"
 port = 80
   
 #Making a socket to open communication
@@ -349,8 +350,6 @@ while iteration < args.communication_rounds - 1:
     
     y_pred = net.predict(X_test)
     
-
-    
     a = open("test_losses.txt", "a+")    
     for i in range(args.n_clients):
         a.write('MSE for Client '+str(i) + ' is: ' + str(mean_squared_error(y_test[:,i,:], y_pred[:,i,:]))+ '\n' )
@@ -365,14 +364,16 @@ while iteration < args.communication_rounds - 1:
     real = real.reshape((real.shape[0], n_data ,  n_outputs))
 
     for i in range(args.n_clients):
-        fig1 = plt.figure(figsize=(16,7))
-        plt.plot(list_data_time[i,:], real[:,i,n_steps_out-1],color='#8EA7EB', label='Test' )
-        plt.plot(list_data_time[i,:], target[:,i,n_steps_out-1],color='#5011D6', label = 'Prediction')
-        plt.xlabel('Date')
-        plt.ylabel('eCO2')
-        plt.title('eCO2 variation over time')
-        plt.grid(True)
-        plt.legend()
+        fig1, ax = plt.subplots(figsize=(16,7))
+        plt.plot(list_data_time[i,:], real[:,i,n_steps_out-1],color='#6156FA', label='Test' )
+        plt.plot(list_data_time[i,:], target[:,i,n_steps_out-1],color='#FFBB69', label = 'Prediction')
+        date_form = mdates.DateFormatter("%d %b")
+        ax.xaxis.set_major_formatter(date_form)
+        ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+        ax.set_xlabel('Time')
+        ax.set_ylabel('eCO2 (ppm)')
+        ax.set_title('Concentration of eCO2 over time')
+        ax.legend()
         fig1.savefig('prediction_client_'+str(i)+'.png', bbox_inches='tight')
         
 
@@ -392,10 +393,11 @@ while iteration < args.communication_rounds - 1:
     h = open("classification_accuracy.txt", "a+")
     h.write("Number: " + str(iteration) + '\n')
     for i in range(args.n_clients):
-        #y_class_test = y_class_test.reshape(-1)
+
         print(y_class_test[:,i,:].reshape(-1).shape)
         h.write('Accuracy of the client :'+str(i+1) + ' is: ' + str(accuracy_score(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1)))+ '\n' )
-        h.write("Labels: " + str(np.unique(y_class_pred[:,i,:])) + '\n')
+        h.write("Labels Real: " + str(np.unique(y_class_test[:,i,:])) + '\n')
+        h.write("Labels Predicted: " + str(np.unique(y_class_pred[:,i,:])) + '\n')
         h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))) + '\n')
         cm = confusion_matrix(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))
         h.write("True Positive: " + str(np.diag(cm)) + " Support for each label " + str(np.sum(cm, axis = 1)) + '\n')

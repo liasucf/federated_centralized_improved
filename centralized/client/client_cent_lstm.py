@@ -36,7 +36,7 @@ p.cpu_percent(interval=None)
 # ### Charging the data
 ## Loading data incrementaly 
 
-host = "54.94.82.121"
+host = "127.0.0.1"
 port = 80
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 s.connect((host,port))
@@ -68,7 +68,7 @@ while True:
 
         #Creating the classes for classification
         #data = data.iloc[0:args.n_samples]
-        bins = [50, 1000, 1500, data['co2'].max()]
+        bins = [50, 1000, 1500, 8000]
         labels = ["Good","Minor Problemns","Hazardous"]
         data['class'] = pd.cut(data['co2'].values, bins=bins, labels=labels)
         
