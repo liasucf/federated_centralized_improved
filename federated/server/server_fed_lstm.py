@@ -36,7 +36,7 @@ def secs2hours(secs):
 
 #Creating architecture of the Neural Network model
 class LSTM(nn.Module):
-    def __init__(self, input_size=15, n_hidden=80, n_layers=1, output_size=5):
+    def __init__(self, input_size=15, n_hidden=50, n_layers=1, output_size=5):
         super(LSTM, self).__init__()
         self.n_hidden = n_hidden
         self.n_layers = n_layers
@@ -67,7 +67,7 @@ class Arguments:
         self.n_clients = int(sys.argv[2])  if len(sys.argv) > 2 else 6
         #if there is no parameters passed the default is 500 
         self.layers = 1
-        self.units = 80
+        self.units = 50
         self.n_steps_out = 5
         self.n_steps_in = 5
         self.n_features = 3

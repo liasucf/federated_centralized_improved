@@ -27,7 +27,7 @@ import matplotlib.dates as mdates
 
 #Creating architecture of the Neural Network model
 class LSTM(nn.Module):
-    def __init__(self, input_size=15, n_hidden=80, n_layers=1, output_size=5):
+    def __init__(self, input_size=15, n_hidden=50, n_layers=1, output_size=5):
         super(LSTM, self).__init__()
         self.n_hidden = n_hidden
         self.n_layers = n_layers
