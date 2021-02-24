@@ -172,7 +172,7 @@ p.cpu_percent(interval=None)
 # ## DataSet
 
 # ### Charging the data
-host = "127.0.0.1"
+host = "0.0.0.0"
 port = 80
   
 #Making a socket to open communication

@@ -36,7 +36,7 @@ p.cpu_percent(interval=None)
 # ### Charging the data
 ## Loading data incrementaly 
 
-host = "127.0.0.1"
+host = "54.94.82.121"
 port = 80
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
 s.connect((host,port))
