@@ -79,7 +79,6 @@ class Arguments:
 #Funtion to send the last model for all the clients that are connected to the server
 def last_model(c,addr):
         
-        b = open("temps_communicate.txt", "a+")
         start_time = time.time()
         with open('initial_model.sav', "rb") as r:
             #Sending the final model to all the clients
@@ -89,10 +88,9 @@ def last_model(c,addr):
             data_length = len(data)
             c.send(data_length.to_bytes(4, 'big'))
             c.send(data)
-
+        b = open("temps_communicate.txt", "a+")
         b.write('Time to send the last model to the client'+ str(addr) + ':' + str(secs2hours(time.time() - start_time))+ '\n')
         b.write('Time to send the last model to the client'+ str(addr) + ':' + str(time.time() - start_time)+ '\n')
-
         b.close()
              
         start_waiting = time.time()
