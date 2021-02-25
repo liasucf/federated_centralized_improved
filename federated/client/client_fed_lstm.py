@@ -171,11 +171,11 @@ while True:
         f.write(rbuf)
     f.close()
     
-    s = open("time_communicate.txt", "a+")
-    s.write("Iteration: " + str(number) + '\n' )
-    s.write('Time to receive the model from the server' + str(time.time() - start_time) + '\n')
-    s.write('Time to receive the model from the server' + str(secs2hours(time.time() - start_time)) + '\n')
-    s.close()
+    g = open("time_communicate.txt", "a+")
+    g.write("Iteration: " + str(number) + '\n' )
+    g.write('Time to receive the model from the server' + str(time.time() - start_time) + '\n')
+    g.write('Time to receive the model from the server' + str(secs2hours(time.time() - start_time)) + '\n')
+    g.close()
 
     increment = increment + 1
     while increment > 0:
