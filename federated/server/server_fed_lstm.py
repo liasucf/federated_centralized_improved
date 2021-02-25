@@ -20,8 +20,11 @@ import psutil
 import os
 import torch
 #Get the process that running right now
+torch.manual_seed(1)
+
 pid = os.getpid()
 #use psutil to detect this process
+
 p = psutil.Process(pid)
 #Return a float representing the current system-wide CPU utilization as a percentage
 #First time you call the value is zero (as a baseline), the second it will compare with the value 
@@ -76,6 +79,7 @@ class Arguments:
 #Funtion to send the last model for all the clients that are connected to the server
 def last_model(c,addr):
         
+        b = open("temps_communicate.txt", "a+")
         start_time = time.time()
         with open('initial_model.sav', "rb") as r:
             #Sending the final model to all the clients
@@ -86,8 +90,9 @@ def last_model(c,addr):
             c.send(data_length.to_bytes(4, 'big'))
             c.send(data)
 
-        b = open("temps_communicate.txt", "a+")
         b.write('Time to send the last model to the client'+ str(addr) + ':' + str(secs2hours(time.time() - start_time))+ '\n')
+        b.write('Time to send the last model to the client'+ str(addr) + ':' + str(time.time() - start_time)+ '\n')
+
         b.close()
              
         start_waiting = time.time()
@@ -108,11 +113,13 @@ def last_model(c,addr):
             
         #get the time to communicate with each client
         b = open("temps_communicate.txt", "a+")
-        b.write("Final Iteraction - Time to communicate: " + str(secs2hours(time.time() - start_waiting))+"of the client"+ str(addr)+ '\n' )
+        b.write("Time to receive final model from the client: " + str(addr) + ':' + str(secs2hours(time.time() - start_waiting)) + '\n' )
+        b.write("Time to receive final model from the client: " + str(addr) + ':' + str(time.time() - start_waiting) + '\n' )
         b.close()
         
         #get the CPU and memory usage in the last communication round
         j = open("memory_cpu.txt", "a+")
+        j.write('Final Iteration')
         j.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
         j.write('percentage utilization of this process in the system' + str(p.cpu_percent(interval=None)))
         j.close()
@@ -245,6 +252,7 @@ while iteration < args.communication_rounds - 1:
        
     #Record the information of memory and cpu usage of the server
     r = open("memory_cpu.txt", "a+")
+    r.write("Iteration Number " + str(iteration), '\n')
     r.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20)+ '\n')
     r.write('physical memory use: (in MB)'+ str(p.memory_percent())+ '\n')
     r.write('percentage utilization of this process in the system' + str(p.cpu_percent(interval=None))+ '\n')

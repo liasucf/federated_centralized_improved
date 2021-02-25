@@ -47,7 +47,6 @@ while True:
     if (msg.decode("ascii") == 'OK'):
         print(msg.decode("ascii"))
         print(iteration)
-        #msg = 0
         if os.path.exists('data_pickled.sav'):
             os.remove('data_pickled.sav')
                 
@@ -74,11 +73,14 @@ while True:
         
         values = np.column_stack((data['Time'], data['temperature'], data['humidity'], data['tvoc'],data['co2'],data['class'] ))
         # ### Creating the sliding window matrix
-        
+        print(data)
         filehandler = open(b"data_pickled.sav","wb")
         pickle.dump(values,filehandler)
         filehandler.close()
         
+        z = open("memory_cpu.txt", "a+")
+        z.write("Iteration: " + str(iteration) + '\n')
+
     #Sending the updated model to the server    
         with open('data_pickled.sav', "rb") as r:
             start_time = time.time()        
@@ -86,13 +88,14 @@ while True:
             data_updated = r.read()
             # check data length in bytes and send it to client
             data_length = len(data_updated)
+
             s.send(data_length.to_bytes(4, 'big'))
             s.send(data_updated)
         r.close()
-    
+        z.write("Time to send data to server: " + str(time.time() -start_time ) + '\n')
+        z.write("Time to send data to server: " + str(secs2hours(time.time() -start_time)) + '\n')
+        z.write("Lenght of data in this iteration : " + str(data) + '\n')
         #Collecting the information of memory and CPU usage
-        z = open("memory_cpu.txt", "a+")
-        z.write("Iteration: " + str(iteration) + '\n')
         z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
         z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
         z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None))+ '\n')

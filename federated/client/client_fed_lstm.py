@@ -170,8 +170,13 @@ while True:
         # write to file
         f.write(rbuf)
     f.close()
-    print('Time to receive the model from the server',time.time() - start_time , '\n')
     
+    s = open("time_communicate.txt", "a+")
+    s.write("Iteration: " + str(number) + '\n' )
+    s.write('Time to receive the model from the server',time.time() - start_time , '\n')
+    s.write('Time to receive the model from the server',secs2hours(time.time() - start_time) , '\n')
+    s.close()
+
     increment = increment + 1
     while increment > 0:
 
@@ -243,7 +248,11 @@ while True:
 
         #saving the training time
         b = open("train_temps.txt", "a+")
-        b.write("Iteration: " + str(number) + " Time to train: " + str(secs2hours(time.time() - start_training))  + '\n' )
+        b.write("Iteration: " + str(number) + '\n' )
+        b.write("Lenght X: " + str(len(X)) + '\n' )
+        b.write("Lenght X: " + str(len(X_train)) + '\n' )
+        b.write(" Time to train: " + str(secs2hours(time.time() - start_training))  + '\n' )
+        b.write( " Time to train: " + str(time.time() - start_training)  + '\n' )
         b.close()
         
         

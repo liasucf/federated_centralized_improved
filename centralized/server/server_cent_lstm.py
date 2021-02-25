@@ -35,7 +35,7 @@ import matplotlib.dates as mdates
 def secs2hours(secs):
     mm, ss = divmod(secs, 60)
     hh, mm = divmod(mm, 60)
-    return "%d:%02d:%02d" % (hh, mm, ss)
+    return "%d:%02d:%04d" % (hh, mm, ss)
 
 #Creating architecture of the Neural Network model
 class LSTM(nn.Module):
@@ -142,7 +142,12 @@ def receive_data(c,addr):
             # write to file
             f.write(rbuf)
         f.close()
-        print("Time to receive data from: "+str(addr) + "is " + str(time.time() - start_time))
+        b = open("time_communicate.txt", "a+")
+        b.write("Iteration: " + str(iteration) + '\n')
+        b.write("Time to receive data from: "+str(addr) + "is " + str(time.time() - start_time))
+        b.write("Time to receive data from: "+str(addr) + "is " + str(secs2hours(time.time() - start_time)))
+        b.close()
+
     except:
         #If there is an timeout or an inactive client that doesnt respond the connection 
         #is closed and the client is removed from the clients list
@@ -188,8 +193,7 @@ trds = []
 #Initialize the clients url
 # -*- coding: utf-8 -*-
 clients = []
-iteration = 0
-count = 0
+global iteration = 0
 # seed random number generator
 seed(1)
 # In[59]:
@@ -320,12 +324,14 @@ while iteration < args.communication_rounds - 1:
     
     start_training_time = time.time()
     net.fit(X_train, y_train)
-    print("Tempo para treinar: " + str(secs2hours(time.time() - start_training_time)))
     
     
     # In[72]:
     z = open("memory_cpu.txt", "a+")
     z.write("Iteration: " + str(iteration) + '\n')
+    z.write("Lenght of X : " + str(len(X)) + '\n')
+    z.write("Lenght of X_train: " + str(len(X_train)) + '\n')
+    z.write("Tempo para treinar" + str(secs2hours(time.time() - start_training_time)))
     z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
     z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
     z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None))+ '\n')
