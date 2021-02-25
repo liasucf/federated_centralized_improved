@@ -94,7 +94,7 @@ while True:
         r.close()
         z.write("Time to send data to server: " + str(time.time() -start_time ) + '\n')
         z.write("Time to send data to server: " + str(secs2hours(time.time() -start_time)) + '\n')
-        z.write("Lenght of data in this iteration : " + str(data) + '\n')
+        z.write("Lenght of data in this iteration : " + str(len(data)) + '\n')
         #Collecting the information of memory and CPU usage
         z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
         z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))

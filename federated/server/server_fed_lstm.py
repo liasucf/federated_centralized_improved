@@ -252,7 +252,7 @@ while iteration < args.communication_rounds - 1:
        
     #Record the information of memory and cpu usage of the server
     r = open("memory_cpu.txt", "a+")
-    r.write("Iteration Number " + str(iteration), '\n')
+    r.write("Iteration Number " + str(iteration) + '\n')
     r.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20)+ '\n')
     r.write('physical memory use: (in MB)'+ str(p.memory_percent())+ '\n')
     r.write('percentage utilization of this process in the system' + str(p.cpu_percent(interval=None))+ '\n')

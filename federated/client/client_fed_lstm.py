@@ -173,8 +173,8 @@ while True:
     
     s = open("time_communicate.txt", "a+")
     s.write("Iteration: " + str(number) + '\n' )
-    s.write('Time to receive the model from the server',time.time() - start_time , '\n')
-    s.write('Time to receive the model from the server',secs2hours(time.time() - start_time) , '\n')
+    s.write('Time to receive the model from the server' + str(time.time() - start_time) + '\n')
+    s.write('Time to receive the model from the server' + str(secs2hours(time.time() - start_time)) + '\n')
     s.close()
 
     increment = increment + 1
@@ -333,7 +333,6 @@ while True:
     z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
     z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None))+ '\n')
     z.close()
-        
     
     
     #Saving the model updated
