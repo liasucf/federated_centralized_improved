@@ -88,33 +88,7 @@ class Arguments:
         self.units = 50
         self.n_steps_out = 5
         self.n_steps_in = 5
-        
-
-# split a multivariate sequence into samples
-def split_sequences(sequences, n_steps_in, n_steps_out):
-	X, y = list(), list()
-	for i in range(len(sequences)):
-		# find the end of this pattern
-		end_ix = i + n_steps_in
-		out_end_ix = end_ix + n_steps_out-1
-		# check if we are beyond the dataset
-		if out_end_ix > len(sequences):
-			break
-		# gather input and output parts of the pattern
-		seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1:out_end_ix, -1]
-		X.append(seq_x)
-		y.append(seq_y)
-	return array(X), array(y)
-
-
-def class_split_sequences (sequences, n_steps):
-    class_label = list()
-    for i in range(len(sequences)):
-		# find the end of this pattern
-        end_ix = i + n_steps
-        seq_class = sequences[i:end_ix]
-        class_label.append(seq_class)
-    return array(class_label)
+        self.n_features = 3
 
 
 def receive_data(c,addr):
@@ -131,7 +105,7 @@ def receive_data(c,addr):
         c.settimeout(1800.0)
  
         msg = int.from_bytes(c.recv(4), 'big')
-        print(msg)
+        print("Number of bytes received of data:" + str(msg))
         #Saving the model received from the client
         f = open('data'+str(addr)+'.sav','wb')
         while msg:
@@ -193,7 +167,8 @@ trds = []
 #Initialize the clients url
 # -*- coding: utf-8 -*-
 clients = []
-global iteration = 0
+global iteration
+iteration = 0
 # seed random number generator
 seed(1)
 # In[59]:
@@ -210,7 +185,7 @@ for i in range(args.n_clients):
     r.write('Client'+ str(i)+'\n')
     r.write('Adresse' + str(addr)+'\n')
 r.close()
-
+n_steps_out = args.n_steps_out
 start_time = time.time()
 while iteration < args.communication_rounds - 1:
     print(iteration)
@@ -227,59 +202,52 @@ while iteration < args.communication_rounds - 1:
        tr.join()
        
     
-    seq_X = []
-    seq_y = []
-    df_X = pd.DataFrame(seq_X) 
-    df_y = pd.DataFrame(seq_y) 
-    data_class = []
-    list_data_time = []
+    seq_X_train = []
+    seq_y_train = []
+    seq_X_test = []
+    seq_y_test = []
+    seq_time = []
+    seq_class = []
+
+    df_X_train = pd.DataFrame(seq_X_train) 
+    df_y_train = pd.DataFrame(seq_y_train) 
+    df_X_test = pd.DataFrame(seq_X_test) 
+    df_y_test = pd.DataFrame(seq_y_test) 
+    
+
     for a in list_of_addresses:
         file = open('data'+str(a)+'.sav','rb')
-        values = pickle.load(file)
+        data = pickle.load(file)
         #getting the time colum
-        data_time = values[:,0]
-        list_data_time.append(pd.to_datetime(data_time, format='%Y-%m-%d %H:%M:%S'))
-        #taking out the time column
-        values = values [:,1:]
-        n_steps_in, n_steps_out = args.n_steps_in, args.n_steps_out
-        
-        bull , y_class = split_sequences(values, n_steps_in , n_steps_out )
-        
-        data_class.append(y_class)
-        values = values[:, :-1]
-        #Creating the sliding window matrix
-    
-        # convert into input/output
-        X,y = split_sequences(values, n_steps_in, n_steps_out)
-        # split into input and outputs
-        #X, y = serie.iloc[:, :-n_steps_out], serie.iloc[:, -n_steps_out:len(serie)]
-        n_timesteps, n_features, n_outputs = X.shape[1], X.shape[2], y.shape[1]
-      
-        n_input = n_timesteps * n_features
-        
-        X = X.reshape((X.shape[0], n_input))
-        
-      
-        for i in range(X.shape[1]):        
-            df_X[str(a)+'_'+str(i)] = X[:,i]
-        for i in range(y.shape[1]):
-            df_y[str(a)+'_co2_'+str(i)] = y[:,i]
-        
-        df_X.append(df_X)
-        df_y.append(df_y)
-    
-    list_data_time = array(list_data_time)
-    data_class = array(data_class)
-    data_class = data_class.reshape((data_class.shape[1], args.n_clients ,  n_outputs))
-    
-    X = df_X.values
-    y = df_y.values
-    
-    SPLIT_IDX = int(len(X) * 0.60)
-    
-    X_train, X_test = X[0:SPLIT_IDX], X[SPLIT_IDX:len(X)]
-    y_train, y_test = y[0:SPLIT_IDX], y[SPLIT_IDX:len(X)]
-    list_data_time = list_data_time[:,SPLIT_IDX:len(X)]
+        data_train = data[0]
+        data_test = data[1]
+        time_data = data[2]
+        class_data = data[3]
+        X_train, y_train = data_train[:,n_steps_out:] , data_train[:,:n_steps_out]
+        X_test, y_test = data_test[:,n_steps_out:] , data_test[:,:n_steps_out]
+        for i in range(X_train.shape[1]):        
+            df_X_train[str(a)+'_'+str(i)] = X_train[:,i]
+            df_X_test[str(a)+'_'+str(i)] = X_test[:,i]
+
+        for i in range(y_train.shape[1]):
+            df_y_train[str(a)+'_co2_'+str(i)] = y_train[:,i]
+            df_y_test[str(a)+'_co2_'+str(i)] = y_test[:,i]
+        df_X_train.append(df_X_train)
+        df_y_train.append(df_y_train)
+        df_X_test.append(df_X_test)
+        df_y_test.append(df_y_test)
+        seq_time.append(time_data)
+        seq_class.append(class_data)
+
+    df_time = np.array(seq_time)
+    df_class = np.array(seq_class)
+    df_time = df_time.reshape((df_time.shape[0], df_time.shape[2]))
+    df_class = df_class.reshape((df_class.shape[0], df_class.shape[2] ,df_class.shape[3]))
+
+    X_train = df_X_train.values
+    y_train = df_y_train.values
+    X_test = df_X_test.values
+    y_test = df_y_test.values
 
     scaler_x = StandardScaler()
     X_train = scaler_x.fit_transform(X_train)
@@ -289,9 +257,11 @@ while iteration < args.communication_rounds - 1:
     y_train = scaler_y.fit_transform(y_train)
     y_test = scaler_y.transform(y_test)
     
-    
-    
+
     n_data = args.n_clients 
+    n_input = args.n_steps_in * args.n_features
+    n_outputs = args.n_steps_out
+
     X_train = X_train.reshape((X_train.shape[0], n_data,  n_input))
     X_test = X_test.reshape((X_test.shape[0], n_data, n_input ))
     
@@ -329,7 +299,6 @@ while iteration < args.communication_rounds - 1:
     # In[72]:
     z = open("memory_cpu.txt", "a+")
     z.write("Iteration: " + str(iteration) + '\n')
-    z.write("Lenght of X : " + str(len(X)) + '\n')
     z.write("Lenght of X_train: " + str(len(X_train)) + '\n')
     z.write("Tempo para treinar" + str(secs2hours(time.time() - start_training_time)))
     z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
@@ -355,7 +324,7 @@ while iteration < args.communication_rounds - 1:
     
     
     y_pred = net.predict(X_test)
-    
+
     a = open("test_losses.txt", "a+")    
     for i in range(args.n_clients):
         a.write('MSE for Client '+str(i) + ' is: ' + str(mean_squared_error(y_test[:,i,:], y_pred[:,i,:]))+ '\n' )
@@ -371,8 +340,8 @@ while iteration < args.communication_rounds - 1:
 
     for i in range(args.n_clients):
         fig1, ax = plt.subplots(figsize=(16,7))
-        plt.plot(list_data_time[i,:], real[:,i,n_steps_out-1],color='#6156FA', label='Test' )
-        plt.plot(list_data_time[i,:], target[:,i,n_steps_out-1],color='#FFBB69', label = 'Prediction')
+        plt.plot(df_time[i,:], real[:,i,n_steps_out-1],color='#6156FA', label='Test' )
+        plt.plot(df_time[i,:], target[:,i,n_steps_out-1],color='#FFBB69', label = 'Prediction')
         date_form = mdates.DateFormatter("%d %b")
         ax.xaxis.set_major_formatter(date_form)
         ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
@@ -386,7 +355,8 @@ while iteration < args.communication_rounds - 1:
     y_pred = y_pred.reshape((y_pred.shape[0], n_data * n_outputs))
     y_pred =  scaler_y.inverse_transform(y_pred)
     
-    y_class_test = data_class[SPLIT_IDX:len(X),:,:]
+    y_class_test = df_class
+    #data_class = data_class.reshape((data_class.shape[1], args.n_clients ,  n_outputs))
 
     bins = [50, 1000, 1500, 8000]
     labels = ["Good","Minor Problemns","Hazardous"]
@@ -400,12 +370,11 @@ while iteration < args.communication_rounds - 1:
     h.write("Number: " + str(iteration) + '\n')
     for i in range(args.n_clients):
 
-        print(y_class_test[:,i,:].reshape(-1).shape)
-        h.write('Accuracy of the client :'+str(i+1) + ' is: ' + str(accuracy_score(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1)))+ '\n' )
-        h.write("Labels Real: " + str(np.unique(y_class_test[:,i,:])) + '\n')
+        h.write('Accuracy of the client :'+str(i+1) + ' is: ' + str(accuracy_score(y_class_test[i,:,:].reshape(-1), y_class_pred[:,i,:].reshape(-1)))+ '\n' )
+        h.write("Labels Real: " + str(np.unique(y_class_test[i,:,:])) + '\n')
         h.write("Labels Predicted: " + str(np.unique(y_class_pred[:,i,:])) + '\n')
-        h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))) + '\n')
-        cm = confusion_matrix(y_class_test[:,i,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))
+        h.write("Confusion Matrix: " + str(confusion_matrix(y_class_test[i,:,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))) + '\n')
+        cm = confusion_matrix(y_class_test[i,:,:].reshape(-1), y_class_pred[:,i,:].reshape(-1))
         h.write("True Positive: " + str(np.diag(cm)) + " Support for each label " + str(np.sum(cm, axis = 1)) + '\n')
         h.write("Recall: " + str(np.diag(cm) / np.sum(cm, axis = 1)) + " Precision: " + str(np.diag(cm) / np.sum(cm, axis = 0)) + '\n')
         h.write("Recall Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 1))) + " Precision Mean: " + str(np.mean(np.diag(cm) / np.sum(cm, axis = 0))) + '\n')
