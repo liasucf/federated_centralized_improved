@@ -66,7 +66,7 @@ list_data_time = []
 data_class = []
 
 data = pd.read_csv('Data/'+args.data +'.csv', sep=',')
-data = data.iloc[0:5300]    
+data = data.iloc[0:5250]    
 
 data['temperature'] = data['temperature'].astype(str).astype(float)
 data['humidity'] = data['humidity'].astype(str).astype(float)
@@ -102,6 +102,7 @@ values = values[:, :-1]
 
 # convert into input/output
 X,y = split_sequences(values, n_steps_in, n_steps_out)
+
 # split into input and outputs
 #X, y = serie.iloc[:, :-n_steps_out], serie.iloc[:, -n_steps_out:len(serie)]
 n_timesteps, n_features, n_outputs = X.shape[1], X.shape[2], y.shape[1]
@@ -128,7 +129,8 @@ while True:
         train_index, test_index = result[0], result[1]
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
-        print(y_test.shape)
+
+
         data_train = np.column_stack((X_train, y_train))
         data_test = np.column_stack((X_test, y_test))
 

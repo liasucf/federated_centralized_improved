@@ -25,7 +25,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import matplotlib.dates as mdates
-
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.preprocessing import MinMaxScaler
 
 # # Implementing MLP Prediction of a Time Series in PyTorch
 
@@ -223,8 +224,11 @@ while iteration < args.communication_rounds - 1:
         data_test = data[1]
         time_data = data[2]
         class_data = data[3]
-        X_train, y_train = data_train[:,n_steps_out:] , data_train[:,:n_steps_out]
-        X_test, y_test = data_test[:,n_steps_out:] , data_test[:,:n_steps_out]
+
+
+        X_train, y_train = data_train[:,:(data_train.shape[1] - args.n_steps_out)] , data_train[:,(data_train.shape[1] - args.n_steps_out):]
+        X_test, y_test = data_test[:,:(data_train.shape[1] - args.n_steps_out)] , data_test[:,(data_train.shape[1] - args.n_steps_out):]
+
         for i in range(X_train.shape[1]):        
             df_X_train[str(a)+'_'+str(i)] = X_train[:,i]
             df_X_test[str(a)+'_'+str(i)] = X_test[:,i]
@@ -232,6 +236,7 @@ while iteration < args.communication_rounds - 1:
         for i in range(y_train.shape[1]):
             df_y_train[str(a)+'_co2_'+str(i)] = y_train[:,i]
             df_y_test[str(a)+'_co2_'+str(i)] = y_test[:,i]
+
         df_X_train.append(df_X_train)
         df_y_train.append(df_y_train)
         df_X_test.append(df_X_test)
@@ -249,11 +254,19 @@ while iteration < args.communication_rounds - 1:
     X_test = df_X_test.values
     y_test = df_y_test.values
 
-    scaler_x = StandardScaler()
+
+    lof = LocalOutlierFactor()
+    yhat = lof.fit_predict(X_train)
+    yhat = lof.fit_predict(X_train)
+    # select all rows that are not outliers
+    mask = yhat != -1
+    X_train, y_train = X_train[mask, :], y_train[mask]
+
+    scaler_x = MinMaxScaler()
     X_train = scaler_x.fit_transform(X_train)
     X_test = scaler_x.transform(X_test)
     
-    scaler_y = StandardScaler()
+    scaler_y = MinMaxScaler()
     y_train = scaler_y.fit_transform(y_train)
     y_test = scaler_y.transform(y_test)
     
@@ -351,10 +364,11 @@ while iteration < args.communication_rounds - 1:
         ax.legend()
         fig1.savefig('prediction_client_'+str(i)+'.png', bbox_inches='tight')
         
-
     y_pred = y_pred.reshape((y_pred.shape[0], n_data * n_outputs))
+    y_test_normal = scaler_y.inverse_transform(y_test.reshape((y_test.shape[0], n_data * n_outputs)))
     y_pred =  scaler_y.inverse_transform(y_pred)
-    
+
+
     y_class_test = df_class
     #data_class = data_class.reshape((data_class.shape[1], args.n_clients ,  n_outputs))
 
