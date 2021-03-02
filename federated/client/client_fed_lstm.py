@@ -99,7 +99,7 @@ p = psutil.Process(pid)
 #Return a float representing the current system-wide CPU utilization as a percentage
 #First time you call the value is zero (as a baseline), the second it will compare with the value 
 #called and give a result  
-p.cpu_percent(interval=None, percpu=False)
+p.cpu_percent(interval=None)
 
 # ## DataSet
 
@@ -332,7 +332,11 @@ while True:
     z.write("Number: " + str(number) + '\n')
     z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
     z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
-    z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None, percpu=False))+ '\n')
+    z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None))+ '\n')
+    z.write('percentage CPU '+ str(psutil.cpu_percent(interval=None, percpu=True))+ '\n')
+    z.write('percentage CPU '+ str(psutil.cpu_percent(interval=None, percpu=False))+ '\n')
+
+    
     z.close()
     
     
