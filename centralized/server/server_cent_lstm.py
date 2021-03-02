@@ -26,7 +26,6 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 import matplotlib.dates as mdates
 from sklearn.neighbors import LocalOutlierFactor
-from sklearn.preprocessing import MinMaxScaler
 
 # # Implementing MLP Prediction of a Time Series in PyTorch
 
@@ -147,7 +146,7 @@ p = psutil.Process(pid)
 #Return a float representing the current system-wide CPU utilization as a percentage
 #First time you call the value is zero (as a baseline), the second it will compare with the value 
 #called and give a result  
-p.cpu_percent(interval=None)
+p.cpu_percent(interval=None,percpu=False)
 
 # ## DataSet
 
@@ -262,11 +261,11 @@ while iteration < args.communication_rounds - 1:
     mask = yhat != -1
     X_train, y_train = X_train[mask, :], y_train[mask]
 
-    scaler_x = MinMaxScaler()
+    scaler_x = StandardScaler()
     X_train = scaler_x.fit_transform(X_train)
     X_test = scaler_x.transform(X_test)
     
-    scaler_y = MinMaxScaler()
+    scaler_y = StandardScaler()
     y_train = scaler_y.fit_transform(y_train)
     y_test = scaler_y.transform(y_test)
     
@@ -316,7 +315,7 @@ while iteration < args.communication_rounds - 1:
     z.write("Tempo para treinar" + str(secs2hours(time.time() - start_training_time)))
     z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
     z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
-    z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None))+ '\n')
+    z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None, percpu=False))+ '\n')
     z.close()
     
     
@@ -324,7 +323,7 @@ while iteration < args.communication_rounds - 1:
     epochs = [i for i in range(len(net.history))]
     train_loss = net.history[:,'train_loss']
     valid_loss = net.history[:,'valid_loss']
-    fig = plt.figure(figsize=(25,10))
+    fig = plt.figure(figsize=(8,5))
     plt.plot(epochs,train_loss,'g-');
     plt.plot(epochs,valid_loss,'r-');
     plt.title('Training Loss Curves');
@@ -352,7 +351,7 @@ while iteration < args.communication_rounds - 1:
     real = real.reshape((real.shape[0], n_data ,  n_outputs))
 
     for i in range(args.n_clients):
-        fig1, ax = plt.subplots(figsize=(16,7))
+        fig1, ax = plt.subplots(figsize=(10,5))
         plt.plot(df_time[i,:], real[:,i,n_steps_out-1],color='#6156FA', label='Test' )
         plt.plot(df_time[i,:], target[:,i,n_steps_out-1],color='#FFBB69', label = 'Prediction')
         date_form = mdates.DateFormatter("%d %b")

@@ -99,7 +99,7 @@ p = psutil.Process(pid)
 #Return a float representing the current system-wide CPU utilization as a percentage
 #First time you call the value is zero (as a baseline), the second it will compare with the value 
 #called and give a result  
-p.cpu_percent(interval=None)
+p.cpu_percent(interval=None, percpu=False)
 
 # ## DataSet
 
@@ -188,7 +188,7 @@ while True:
         y_train, y_test = y[train_index], y[test_index]
 
 
-        fig_split, ax = plt.subplots(figsize=(20, 6))
+        fig_split, ax = plt.subplots(figsize=(8,5))
         ax.plot(data['Time'][train_index],y_train[:,n_steps_out-1] ,linestyle='-', linewidth=2, label='Train', color='#E65132')
         ax.plot(data['Time'][np.hstack((train_index,test_index))], [None for i in y_train[:,n_steps_out-1]] + [x for x in y_test[:,n_steps_out-1]] , linestyle='-', linewidth=2, label='Test', color='#6156FA')
         date_form = mdates.DateFormatter("%d %b")
@@ -263,7 +263,7 @@ while True:
         train_loss = net.history[:,'train_loss']
         valid_loss = net.history[:,'valid_loss']
         
-        fig = plt.figure(figsize=(25,10))
+        fig = plt.figure(figsize=(8,5))
         plt.plot(epochs,train_loss,'g-');
         plt.plot(epochs,valid_loss,'r-');
         plt.title('Training Loss Curves');
@@ -284,7 +284,7 @@ while True:
         real = scaler_y.inverse_transform(y_test)
  
 
-        fig1, ax = plt.subplots(figsize=(16,7))
+        fig1, ax = plt.subplots(figsize=(10,5))
         ax.plot(data['Time'][test_index], real[:,n_steps_out-1],color='#6156FA', label='Test' )
         ax.plot(data['Time'][test_index], target[:,n_steps_out-1],color='#FFBB69', label = 'Prediction')
         
@@ -332,7 +332,7 @@ while True:
     z.write("Number: " + str(number) + '\n')
     z.write('percentage of memory use: '+ str(p.memory_percent())+ '\n')
     z.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
-    z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None))+ '\n')
+    z.write('percentage utilization of this process in the system '+ str(p.cpu_percent(interval=None, percpu=False))+ '\n')
     z.close()
     
     

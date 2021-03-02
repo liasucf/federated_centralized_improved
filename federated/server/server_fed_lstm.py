@@ -29,7 +29,7 @@ p = psutil.Process(pid)
 #Return a float representing the current system-wide CPU utilization as a percentage
 #First time you call the value is zero (as a baseline), the second it will compare with the value 
 #called and give a result  
-p.cpu_percent(interval=None)
+p.cpu_percent(interval=None, percpu=False)
 
 #Funtion to convert seconds to hours
 def secs2hours(secs):
@@ -119,7 +119,7 @@ def last_model(c,addr):
         j = open("memory_cpu.txt", "a+")
         j.write('Final Iteration')
         j.write('physical memory use: (in MB)'+ str(p.memory_info()[0]/2.**20))
-        j.write('percentage utilization of this process in the system' + str(p.cpu_percent(interval=None)))
+        j.write('percentage utilization of this process in the system' + str(p.cpu_percent(interval=None, percpu=False)))
         j.close()
             
 def clientHandler(c, addr):
