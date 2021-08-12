@@ -1,0 +1,8 @@
+Client0
+Adresse('127.0.0.1', 52565)
+Client1
+Adresse('127.0.0.1', 52566)
+Client0
+Adresse('127.0.0.1', 52569)
+Client1
+Adresse('127.0.0.1', 52570)

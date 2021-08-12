@@ -1,0 +1,24 @@
+Iteration: 0
+Time to receive the model from the server14.704649925231934
+Time to receive the model from the server0:00:14
+Iteration: 1
+Time to receive the model from the server0.00800180435180664
+Time to receive the model from the server0:00:00
+Iteration: 2
+Time to receive the model from the server0.006019115447998047
+Time to receive the model from the server0:00:00
+Iteration: 3
+Time to receive the model from the server0.00800013542175293
+Time to receive the model from the server0:00:00
+Iteration: 0
+Time to receive the model from the server7.505601167678833
+Time to receive the model from the server0:00:07
+Iteration: 1
+Time to receive the model from the server0.007000923156738281
+Time to receive the model from the server0:00:00
+Iteration: 2
+Time to receive the model from the server0.012234687805175781
+Time to receive the model from the server0:00:00
+Iteration: 3
+Time to receive the model from the server0.004088878631591797
+Time to receive the model from the server0:00:00

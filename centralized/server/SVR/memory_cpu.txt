@@ -1,0 +1,30 @@
+Iteration: 0
+Lenght of X_train: 27490
+Tempo para treinar0:00:0007percentage of memory use: 1.0063376586226658
+physical memory use: (in MB)162.7109375percentage utilization of this process in the system 55.0
+percentage CPU [35.3, 7.2, 20.1, 9.8, 16.8, 10.8, 14.8, 22.2]
+percentage CPU 17.5
+Iteration: 0
+Lenght of X_train: 27490
+Tempo para treinar0:00:0008percentage of memory use: 1.0039699758496357
+physical memory use: (in MB)162.328125percentage utilization of this process in the system 51.7
+percentage CPU [23.8, 19.8, 25.5, 12.6, 19.1, 20.9, 15.7, 30.4]
+percentage CPU 21.0
+Iteration: 0
+Lenght of X_train: 27490
+Tempo para treinar0:00:0007percentage of memory use: 0.9954414858610683
+physical memory use: (in MB)160.94921875percentage utilization of this process in the system 54.9
+percentage CPU [13.9, 9.1, 18.3, 18.0, 8.3, 8.6, 22.7, 18.6]
+percentage CPU 14.7
+Iteration: 0
+Lenght of X_train: 27490
+Tempo para treinar0:00:0007percentage of memory use: 0.995852206342104
+physical memory use: (in MB)161.015625percentage utilization of this process in the system 52.1
+percentage CPU [14.1, 5.9, 13.9, 10.3, 10.3, 13.6, 5.7, 22.2]
+percentage CPU 12.0
+Iteration: 0
+Lenght of X_train: 27490
+Tempo para treinar0:00:0007percentage of memory use: 0.999500370614834
+physical memory use: (in MB)161.60546875percentage utilization of this process in the system 54.1
+percentage CPU [27.8, 9.3, 12.1, 8.4, 11.8, 15.2, 11.2, 24.8]
+percentage CPU 15.3

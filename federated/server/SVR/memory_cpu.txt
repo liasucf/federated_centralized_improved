@@ -1,0 +1,24 @@
+Iteration Number 1
+physical memory use: (in MB)97.22265625
+physical memory use: (in MB)0.6013189442647475
+percentage utilization of this process in the system0.0
+Iteration Number 2
+physical memory use: (in MB)97.546875
+physical memory use: (in MB)0.6033242266133342
+percentage utilization of this process in the system2.4
+Final Iterationphysical memory use: (in MB)97.6015625percentage utilization of this process in the system0.0percentage CPU [18.5, 3.9, 17.2, 7.5, 11.3, 5.2, 12.7, 16.9]
+percentage CPU 11.8
+Final Iterationphysical memory use: (in MB)97.5859375percentage utilization of this process in the system0.0percentage CPU [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+percentage CPU 0.0
+Iteration Number 1
+physical memory use: (in MB)96.98046875
+physical memory use: (in MB)0.5998451825386778
+percentage utilization of this process in the system0.0
+Iteration Number 2
+physical memory use: (in MB)97.24609375
+physical memory use: (in MB)0.6014880644628211
+percentage utilization of this process in the system0.0
+Final Iterationphysical memory use: (in MB)97.30078125percentage utilization of this process in the system0.1percentage CPU [36.6, 24.7, 21.5, 19.1, 18.3, 15.6, 38.5, 45.5]
+percentage CPU 27.5
+Final Iterationphysical memory use: (in MB)97.25390625percentage utilization of this process in the system0.0percentage CPU [23.9, 16.9, 10.7, 8.7, 11.8, 6.3, 29.5, 36.8]
+percentage CPU 18.1

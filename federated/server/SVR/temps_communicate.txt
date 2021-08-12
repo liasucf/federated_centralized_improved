@@ -1,0 +1,20 @@
+Time to send the last model to the client('127.0.0.1', 52566):0:00:00
+Time to send the last model to the client('127.0.0.1', 52566):0.0009996891021728516
+Time to send the last model to the client('127.0.0.1', 52565):0:00:00
+Time to send the last model to the client('127.0.0.1', 52565):0.0020020008087158203
+Bytes Received - Final Iteraction: 1440
+Bytes Received - Final Iteraction: 1440
+Time to receive final model from the client: ('127.0.0.1', 52566):0:00:00
+Time to receive final model from the client: ('127.0.0.1', 52566):0.9169507026672363
+Time to receive final model from the client: ('127.0.0.1', 52565):0:00:00
+Time to receive final model from the client: ('127.0.0.1', 52565):0.9169342517852783
+Time to send the last model to the client('127.0.0.1', 52569):0:00:00
+Time to send the last model to the client('127.0.0.1', 52569):0.002998828887939453
+Time to send the last model to the client('127.0.0.1', 52570):0:00:00
+Time to send the last model to the client('127.0.0.1', 52570):0.006273984909057617
+Bytes Received - Final Iteraction: 1440
+Time to receive final model from the client: ('127.0.0.1', 52570):0:00:29
+Time to receive final model from the client: ('127.0.0.1', 52570):29.355671882629395
+Bytes Received - Final Iteraction: 1440
+Time to receive final model from the client: ('127.0.0.1', 52569):0:01:19
+Time to receive final model from the client: ('127.0.0.1', 52569):79.96450567245483
